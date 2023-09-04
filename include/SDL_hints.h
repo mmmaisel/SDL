@@ -839,6 +839,8 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM "SDL_JOYSTICK_HIDAPI_STEAM"
 
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK "SDL_JOYSTICK_HIDAPI_STEAMDECK"
+
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Switch controllers should be used.
  *
