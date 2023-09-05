@@ -38,192 +38,101 @@
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
-static int ReadSteamDeck(SDL_hid_device *dev, uint8_t *pData, int nDataSize)
-{
-    SDL_memset(pData, 0, nDataSize);
-    return SDL_hid_read(dev, pData, nDataSize);
-}
+#include "steam/controller_structs.h"
 
-/*
- * The size for this message payload is 56.
- * The known values are:
- *  Offset| Type  | Mapped to |Meaning
- * -------+-------+-----------+--------------------------
- *  4-7   | u32   | --        | sequence number
- *  8-15  | u64   | see below | buttons
- *  16-17 | s16   | ABS_HAT0X | left-pad X value
- *  18-19 | s16   | ABS_HAT0Y | left-pad Y value
- *  20-21 | s16   | ABS_HAT1X | right-pad X value
- *  22-23 | s16   | ABS_HAT1Y | right-pad Y value
- *  24-25 | s16   | --        | accelerometer X value
- *  26-27 | s16   | --        | accelerometer Y value
- *  28-29 | s16   | --        | accelerometer Z value
- *  30-31 | s16   | --        | gyro X value
- *  32-33 | s16   | --        | gyro Y value
- *  34-35 | s16   | --        | gyro Z value
- *  36-37 | s16   | --        | quaternion W value
- *  38-39 | s16   | --        | quaternion X value
- *  40-41 | s16   | --        | quaternion Y value
- *  42-43 | s16   | --        | quaternion Z value
- *  44-45 | u16   | ABS_HAT2Y | left trigger (uncalibrated)
- *  46-47 | u16   | ABS_HAT2X | right trigger (uncalibrated)
- *  48-49 | s16   | ABS_X     | left joystick X
- *  50-51 | s16   | ABS_Y     | left joystick Y
- *  52-53 | s16   | ABS_RX    | right joystick X
- *  54-55 | s16   | ABS_RY    | right joystick Y
- *  56-57 | u16   | --        | left pad pressure
- *  58-59 | u16   | --        | right pad pressure
- *
- * The buttons are:
- *  Bit  | Mapped to  | Description
- * ------+------------+--------------------------------
- *  8.0  | BTN_TR2    | right trigger fully pressed
- *  8.1  | BTN_TL2    | left trigger fully pressed
- *  8.2  | BTN_TR     | right shoulder
- *  8.3  | BTN_TL     | left shoulder
- *  8.4  | BTN_Y      | button Y
- *  8.5  | BTN_B      | button B
- *  8.6  | BTN_X      | button X
- *  8.7  | BTN_A      | button A
- *  9.0  | BTN_DPAD_UP    | left-pad up
- *  9.1  | BTN_DPAD_RIGHT | left-pad right
- *  9.2  | BTN_DPAD_LEFT  | left-pad left
- *  9.3  | BTN_DPAD_DOWN  | left-pad down
- *  9.4  | BTN_SELECT | menu left
- *  9.5  | BTN_MODE   | steam logo
- *  9.6  | BTN_START  | menu right
- *  9.7  | BTN_TRIGGER_HAPPY3 | left bottom grip button
- *  10.0 | BTN_TRIGGER_HAPPY4 | right bottom grip button
- *  10.1 | BTN_THUMB  | left pad pressed
- *  10.2 | BTN_THUMB2 | right pad pressed
- *  10.3 | --         | left pad touched
- *  10.4 | --         | right pad touched
- *  10.5 | --         | unknown
- *  10.6 | BTN_THUMBL | left joystick clicked
- *  10.7 | --         | unknown
- *  11.0 | --         | unknown
- *  11.1 | --         | unknown
- *  11.2 | BTN_THUMBR | right joystick clicked
- *  11.3 | --         | unknown
- *  11.4 | --         | unknown
- *  11.5 | --         | unknown
- *  11.6 | --         | unknown
- *  11.7 | --         | unknown
- *  12.0 | --         | unknown
- *  12.1 | --         | unknown
- *  12.2 | --         | unknown
- *  12.3 | --         | unknown
- *  12.4 | --         | unknown
- *  12.5 | --         | unknown
- *  12.6 | --         | unknown
- *  12.7 | --         | unknown
- *  13.0 | --         | unknown
- *  13.1 | BTN_TRIGGER_HAPPY1 | left top grip button
- *  13.2 | BTN_TRIGGER_HAPPY2 | right top grip button
- *  13.3 | --         | unknown
- *  13.4 | --         | unknown
- *  13.5 | --         | unknown
- *  13.6 | --         | left joystick touched
- *  13.7 | --         | right joystick touched
- *  14.0 | --         | unknown
- *  14.1 | --         | unknown
- *  14.2 | BTN_BASE   | quick access button
- *  14.3 | --         | unknown
- *  14.4 | --         | unknown
- *  14.5 | --         | unknown
- *  14.6 | --         | unknown
- *  14.7 | --         | unknown
- *  15.0 | --         | unknown
- *  15.1 | --         | unknown
- *  15.2 | --         | unknown
- *  15.3 | --         | unknown
- *  15.4 | --         | unknown
- *  15.5 | --         | unknown
- *  15.6 | --         | unknown
- *  15.7 | --         | unknown
- */
+/*    if (size != 64 || data[0] != 1 || data[1] != 0)
+        return 0;
+
+    switch (data[2]) {*/
 
 #if 0
 static void steam_do_deck_input_event(struct steam_device *steam,
-		struct input_dev *input, u8 *data)
+        struct input_dev *input, u8 *data)
 {
-	u8 b8, b9, b10, b11, b13, b14;
-	bool lpad_touched, rpad_touched;
+    u8 b8, b9, b10, b11, b13, b14;
+    bool lpad_touched, rpad_touched;
 
-	b8 = data[8];
-	b9 = data[9];
-	b10 = data[10];
-	b11 = data[11];
-	b13 = data[13];
-	b14 = data[14];
+    b8 = data[8];
+    b9 = data[9];
+    b10 = data[10];
+    b11 = data[11];
+    b13 = data[13];
+    b14 = data[14];
 
-	lpad_touched = b10 & BIT(3);
-	rpad_touched = b10 & BIT(4);
+    lpad_touched = b10 & BIT(3);
+    rpad_touched = b10 & BIT(4);
 
-	if (lpad_touched) {
-		input_report_abs(input, ABS_HAT0X, steam_le16(data + 16));
-		input_report_abs(input, ABS_HAT0Y, steam_le16(data + 18));
-	} else {
-		input_report_abs(input, ABS_HAT0X, 0);
-		input_report_abs(input, ABS_HAT0Y, 0);
-	}
+    if (lpad_touched) {
+        input_report_abs(input, ABS_HAT0X, steam_le16(data + 16));
+        input_report_abs(input, ABS_HAT0Y, steam_le16(data + 18));
+    } else {
+        input_report_abs(input, ABS_HAT0X, 0);
+        input_report_abs(input, ABS_HAT0Y, 0);
+    }
 
-	if (rpad_touched) {
-		input_report_abs(input, ABS_HAT1X, steam_le16(data + 20));
-		input_report_abs(input, ABS_HAT1Y, steam_le16(data + 22));
-	} else {
-		input_report_abs(input, ABS_HAT1X, 0);
-		input_report_abs(input, ABS_HAT1Y, 0);
-	}
+    if (rpad_touched) {
+        input_report_abs(input, ABS_HAT1X, steam_le16(data + 20));
+        input_report_abs(input, ABS_HAT1Y, steam_le16(data + 22));
+    } else {
+        input_report_abs(input, ABS_HAT1X, 0);
+        input_report_abs(input, ABS_HAT1Y, 0);
+    }
 
-	input_report_abs(input, ABS_X, steam_le16(data + 48));
-	input_report_abs(input, ABS_Y, -steam_le16(data + 50));
-	input_report_abs(input, ABS_RX, steam_le16(data + 52));
-	input_report_abs(input, ABS_RY, -steam_le16(data + 54));
+    input_report_abs(input, ABS_X, steam_le16(data + 48));
+    input_report_abs(input, ABS_Y, -steam_le16(data + 50));
+    input_report_abs(input, ABS_RX, steam_le16(data + 52));
+    input_report_abs(input, ABS_RY, -steam_le16(data + 54));
 
-	input_report_abs(input, ABS_HAT2Y, steam_le16(data + 44));
-	input_report_abs(input, ABS_HAT2X, steam_le16(data + 46));
+    input_report_abs(input, ABS_HAT2Y, steam_le16(data + 44));
+    input_report_abs(input, ABS_HAT2X, steam_le16(data + 46));
 
-	input_event(input, EV_KEY, BTN_TR2, !!(b8 & BIT(0)));
-	input_event(input, EV_KEY, BTN_TL2, !!(b8 & BIT(1)));
-	input_event(input, EV_KEY, BTN_TR, !!(b8 & BIT(2)));
-	input_event(input, EV_KEY, BTN_TL, !!(b8 & BIT(3)));
-	input_event(input, EV_KEY, BTN_Y, !!(b8 & BIT(4)));
-	input_event(input, EV_KEY, BTN_B, !!(b8 & BIT(5)));
-	input_event(input, EV_KEY, BTN_X, !!(b8 & BIT(6)));
-	input_event(input, EV_KEY, BTN_A, !!(b8 & BIT(7)));
-	input_event(input, EV_KEY, BTN_SELECT, !!(b9 & BIT(4)));
-	input_event(input, EV_KEY, BTN_MODE, !!(b9 & BIT(5)));
-	input_event(input, EV_KEY, BTN_START, !!(b9 & BIT(6)));
-	input_event(input, EV_KEY, BTN_TRIGGER_HAPPY3, !!(b9 & BIT(7)));
-	input_event(input, EV_KEY, BTN_TRIGGER_HAPPY4, !!(b10 & BIT(0)));
-	input_event(input, EV_KEY, BTN_THUMBL, !!(b10 & BIT(6)));
-	input_event(input, EV_KEY, BTN_THUMBR, !!(b11 & BIT(2)));
-	input_event(input, EV_KEY, BTN_DPAD_UP, !!(b9 & BIT(0)));
-	input_event(input, EV_KEY, BTN_DPAD_RIGHT, !!(b9 & BIT(1)));
-	input_event(input, EV_KEY, BTN_DPAD_LEFT, !!(b9 & BIT(2)));
-	input_event(input, EV_KEY, BTN_DPAD_DOWN, !!(b9 & BIT(3)));
-	input_event(input, EV_KEY, BTN_THUMB, !!(b10 & BIT(1)));
-	input_event(input, EV_KEY, BTN_THUMB2, !!(b10 & BIT(2)));
-	input_event(input, EV_KEY, BTN_TRIGGER_HAPPY1, !!(b13 & BIT(1)));
-	input_event(input, EV_KEY, BTN_TRIGGER_HAPPY2, !!(b13 & BIT(2)));
-	input_event(input, EV_KEY, BTN_BASE, !!(b14 & BIT(2)));
+    input_event(input, EV_KEY, BTN_TR2, !!(b8 & BIT(0)));
+    input_event(input, EV_KEY, BTN_TL2, !!(b8 & BIT(1)));
+    input_event(input, EV_KEY, BTN_TR, !!(b8 & BIT(2)));
+    input_event(input, EV_KEY, BTN_TL, !!(b8 & BIT(3)));
+    input_event(input, EV_KEY, BTN_Y, !!(b8 & BIT(4)));
+    input_event(input, EV_KEY, BTN_B, !!(b8 & BIT(5)));
+    input_event(input, EV_KEY, BTN_X, !!(b8 & BIT(6)));
+    input_event(input, EV_KEY, BTN_A, !!(b8 & BIT(7)));
+    input_event(input, EV_KEY, BTN_SELECT, !!(b9 & BIT(4)));
+    input_event(input, EV_KEY, BTN_MODE, !!(b9 & BIT(5)));
+    input_event(input, EV_KEY, BTN_START, !!(b9 & BIT(6)));
+    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY3, !!(b9 & BIT(7)));
+    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY4, !!(b10 & BIT(0)));
+    input_event(input, EV_KEY, BTN_THUMBL, !!(b10 & BIT(6)));
+    input_event(input, EV_KEY, BTN_THUMBR, !!(b11 & BIT(2)));
+    input_event(input, EV_KEY, BTN_DPAD_UP, !!(b9 & BIT(0)));
+    input_event(input, EV_KEY, BTN_DPAD_RIGHT, !!(b9 & BIT(1)));
+    input_event(input, EV_KEY, BTN_DPAD_LEFT, !!(b9 & BIT(2)));
+    input_event(input, EV_KEY, BTN_DPAD_DOWN, !!(b9 & BIT(3)));
+    input_event(input, EV_KEY, BTN_THUMB, !!(b10 & BIT(1)));
+    input_event(input, EV_KEY, BTN_THUMB2, !!(b10 & BIT(2)));
+    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY1, !!(b13 & BIT(1)));
+    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY2, !!(b13 & BIT(2)));
+    input_event(input, EV_KEY, BTN_BASE, !!(b14 & BIT(2)));
 
-	input_sync(input);
+    input_sync(input);
 }
 
 static void steam_do_deck_sensors_event(struct steam_device *steam,
-		struct input_dev *sensors, u8 *data)
+        struct input_dev *sensors, u8 *data)
 {
-	input_report_abs(sensors, ABS_X, steam_le16(data + 24));
-	input_report_abs(sensors, ABS_Y, steam_le16(data + 26));
-	input_report_abs(sensors, ABS_Z, steam_le16(data + 28));
-	input_report_abs(sensors, ABS_RX, steam_le16(data + 30));
-	input_report_abs(sensors, ABS_RY, steam_le16(data + 32));
-	input_report_abs(sensors, ABS_RZ, steam_le16(data + 34));
+    input_report_abs(sensors, ABS_X, steam_le16(data + 24));
+    input_report_abs(sensors, ABS_Y, steam_le16(data + 26));
+    input_report_abs(sensors, ABS_Z, steam_le16(data + 28));
+    input_report_abs(sensors, ABS_RX, steam_le16(data + 30));
+    input_report_abs(sensors, ABS_RY, steam_le16(data + 32));
+    input_report_abs(sensors, ABS_RZ, steam_le16(data + 34));
 
-	input_sync(sensors);
+    input_sync(sensors);
 }
+
+|01000940 fd9a0000 00000000 00000000| ...@............ 00000000
+|00000000 00000000 c1005903 7e400000| ..........Y.~@.. 00000010
+|0100ffff c8aeeafc 8efd289d 00000000| ..........(..... 00000020
+|31042f08 f7053807 00000000 00000000| 1./...8......... 00000030
+                                                       00000040
+
 #endif
 
 /*****************************************************************************************************/
@@ -271,6 +180,13 @@ static SDL_bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 #endif
+    /* Read a report to see if this is the correct endpoint */
+    Uint8 data[64];
+    int size;
+
+    size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
+    if (size == 0)
+        return SDL_FALSE;
 
     // TODO: pick the correct device, there is controler, mouse, keyboard with the same vid/pid
     SDL_Log("HIDAPI Steam Deck initialize called\n");
@@ -292,116 +208,119 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     //SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     SDL_Joystick *joystick = NULL;
+    int r;
+    uint8_t data[64];
+    ValveInReport_t *pInReport = (ValveInReport_t *)data;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
+        if (joystick == NULL) {
+            SDL_Log("SteamDeck_UpdateDevice() joystick is NULL\n");
+            return SDL_FALSE;
+        }
     } else {
+        SDL_Log("SteamDeck_UpdateDevice() no joystick\n");
         return SDL_FALSE;
     }
 
-    for (;;) {
-        uint8_t data[56];
-        int r, nPacketLength;
-        const Uint8 *pPacket;
-
-        r = ReadSteamDeck(device->dev, data, sizeof(data));
-        if (r == 0) {
-            break;
-        }
-
-        if (joystick == NULL) {
-            continue;
-        }
-
-        // TODO: parse and validate packet
-        nPacketLength = 0;
-        if (r > 0) {
-            //nPacketLength = WriteSegmentToSteamControllerPacketAssembler(&ctx->m_assembler, data, r);
-        }
-
-        //pPacket = ctx->m_assembler.uBuffer;
-
-        if (nPacketLength > 0) { // && UpdateSteamControllerState(pPacket, nPacketLength, &ctx->m_state)) {
-            //Uint64 timestamp = SDL_GetTicksNS();
-
-            /*if (ctx->m_state.ulButtons != ctx->m_last_state.ulButtons) {
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
-                                          (ctx->m_state.ulButtons & STEAM_LEFT_BUMPER_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
-                                          (ctx->m_state.ulButtons & STEAM_RIGHT_BUMPER_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_MENU_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_ESCAPE_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_STEAM_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,
-                                          (ctx->m_state.ulButtons & STEAM_JOYSTICK_BUTTON_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 0,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 1,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
-
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
-            }*/
-
-            /*SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, (int)ctx->m_state.sTriggerL * 2 - 32768);
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, (int)ctx->m_state.sTriggerR * 2 - 32768);
-
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, ctx->m_state.sLeftStickX);
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, ~ctx->m_state.sLeftStickY);
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, ctx->m_state.sRightPadX);
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~ctx->m_state.sRightPadY);*/
-
-            /*if (ctx->report_sensors) {
-                float values[3];
-
-                ctx->sensor_timestamp += SDL_US_TO_NS(ctx->update_rate_in_us);
-
-                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
-                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
-                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->sensor_timestamp, values, 3);
-
-                values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-                values[1] = (ctx->m_state.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-                values[2] = (-ctx->m_state.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp, values, 3);
-            }*/
-
-            //ctx->m_last_state = ctx->m_state;
-        }
-
-        if (r <= 0) {
-            /* Failed to read from controller */
-            HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
-            return SDL_FALSE;
-        }
+    SDL_memset(data, 0, sizeof(data));
+    r = SDL_hid_read(device->dev, data, sizeof(data));
+    //SDL_Log("SteamDeck_UpdateDevice() SDL_hid_read returned %d\n", r);
+    if (r == 0) {
+        return SDL_FALSE;
+    } else if (r <= 0) {
+        /* Failed to read from controller */
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        return SDL_FALSE;
     }
+
+    // TODO: parse and validate packet
+    if (!(r == 64 && pInReport->header.unReportVersion == k_ValveInReportMsgVersion
+            && pInReport->header.ucType == ID_CONTROLLER_DECK_STATE
+            && pInReport->header.ucLength == 64)) {
+        SDL_Log("SteamDeck_UpdateDevice() received invalid packet: v: %d, t: %d, l: %d\n",
+                pInReport->header.unReportVersion, pInReport->header.ucType, pInReport->header.ucLength);
+        return SDL_FALSE;
+    }
+
+    //Uint64 timestamp = SDL_GetTicksNS();
+
+    /*if (ctx->m_state.ulButtons != ctx->m_last_state.ulButtons) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+                                  (ctx->m_state.ulButtons & STEAM_LEFT_BUMPER_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+                                  (ctx->m_state.ulButtons & STEAM_RIGHT_BUMPER_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_MENU_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_ESCAPE_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_STEAM_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,
+                                  (ctx->m_state.ulButtons & STEAM_JOYSTICK_BUTTON_MASK) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 0,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 1,
+                                  (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP,
+                                  (ctx->m_state.ulButtons & STEAM_TOUCH_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+                                  (ctx->m_state.ulButtons & STEAM_TOUCH_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT,
+                                  (ctx->m_state.ulButtons & STEAM_TOUCH_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
+                                  (ctx->m_state.ulButtons & STEAM_TOUCH_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
+    }*/
+
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+        (int)pInReport->payload.deckState.sLeftTrigger * 2 - 32768);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT,
+        (int)pInReport->payload.deckState.sRightTrigger * 2 - 32768);
+
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX,
+        pInReport->payload.deckState.sLeftStickX);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY,
+        -pInReport->payload.deckState.sLeftStickY);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX,
+        pInReport->payload.deckState.sRightStickX);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY,
+        -pInReport->payload.deckState.sRightStickY);
+
+    /*if (ctx->report_sensors) {
+        float values[3];
+
+        ctx->sensor_timestamp += SDL_US_TO_NS(ctx->update_rate_in_us);
+
+        values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+        values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+        values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->sensor_timestamp, values, 3);
+
+        values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
+        values[1] = (ctx->m_state.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
+        values[2] = (-ctx->m_state.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp, values, 3);
+    }*/
+
+    //ctx->m_last_state = ctx->m_state;
     return SDL_TRUE;
 }
 
