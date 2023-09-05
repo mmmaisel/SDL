@@ -50,7 +50,8 @@ static void HIDAPI_DriverSteamDeck_UnregisterHints(SDL_HintCallback callback, vo
 
 static SDL_bool HIDAPI_DriverSteamDeck_IsEnabled(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK, SDL_FALSE);
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK,
+            SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
 static SDL_bool HIDAPI_DriverSteamDeck_IsSupportedDevice(
@@ -92,6 +93,7 @@ static SDL_bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
 
     return HIDAPI_JoystickConnected(device, NULL);
 #endif
+    SDL_Log("HIDAPI Steam Deck initialize called\n");
     return SDL_FALSE;
 }
 
