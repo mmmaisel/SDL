@@ -54,7 +54,7 @@ static SDL_bool DisableDeckLizardMode(SDL_hid_device *dev)
 {
     int rc;
     Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
-    FeatureReportMsg *msg = (FeatureReportMsg*)(buffer + 1);
+    FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
 
     msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
 
@@ -90,7 +90,7 @@ static SDL_bool FeedDeckLizardWatchdog(SDL_hid_device *dev)
 {
     int rc;
     Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
-    FeatureReportMsg *msg = (FeatureReportMsg*)(buffer + 1);
+    FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
 
     msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
 
@@ -170,7 +170,6 @@ static SDL_bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
     if (!DisableDeckLizardMode(device->dev))
         return SDL_FALSE;
 
-    SDL_Log("HIDAPI Steam Deck initialize called\n");
     HIDAPI_SetDeviceName(device, "Steam Deck");
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -197,11 +196,9 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
         if (joystick == NULL) {
-            SDL_Log("SteamDeck_UpdateDevice() joystick is NULL\n");
             return SDL_FALSE;
         }
     } else {
-        SDL_Log("SteamDeck_UpdateDevice() no joystick\n");
         return SDL_FALSE;
     }
 
@@ -213,7 +210,6 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
 
     SDL_memset(data, 0, sizeof(data));
     r = SDL_hid_read(device->dev, data, sizeof(data));
-    // SDL_Log("SteamDeck_UpdateDevice() SDL_hid_read returned %d\n", r);
     if (r == 0) {
         return SDL_FALSE;
     } else if (r <= 0) {
@@ -223,8 +219,6 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (!(r == 64 && pInReport->header.unReportVersion == k_ValveInReportMsgVersion && pInReport->header.ucType == ID_CONTROLLER_DECK_STATE && pInReport->header.ucLength == 64)) {
-        SDL_Log("SteamDeck_UpdateDevice() received invalid packet: v: %d, t: %d, l: %d\n",
-                pInReport->header.unReportVersion, pInReport->header.ucType, pInReport->header.ucLength);
         return SDL_FALSE;
     }
 
@@ -310,27 +304,10 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static SDL_bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    // Always 1kHz according to USB descriptor
     float update_rate_in_hz = 1000.0f;
-    SDL_Log("HIDAPI Steam Deck open joystick called\n");
-    // SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
-    //  Should be always 1kHz according to USB descriptor
 
     SDL_AssertJoysticksLocked();
-
-    /*ctx->report_sensors = SDL_FALSE;
-    SDL_zero(ctx->m_assembler);
-    SDL_zero(ctx->m_state);
-    SDL_zero(ctx->m_last_state);*/
-
-    /*if (!ResetSteamController(device->dev, false, &ctx->update_rate_in_us)) {
-        SDL_SetError("Couldn't reset controller");
-        return SDL_FALSE;
-    }
-    if (ctx->update_rate_in_us > 0) {
-        update_rate_in_hz = 1000000.0f / ctx->update_rate_in_us;
-    }
-
-    InitializeSteamControllerPacketAssembler(&ctx->m_assembler);*/
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 20;
@@ -370,33 +347,13 @@ static int HIDAPI_DriverSteamDeck_SendJoystickEffect(SDL_HIDAPI_Device *device, 
 
 static int HIDAPI_DriverSteamDeck_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
-    SDL_Log("HIDAPI Steam Deck set sensors enabled called\n");
-    // XXX: nothing to do here for wired ?
-#if 0
-    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
-    unsigned char buf[65];
-    int nSettings = 0;
-
-    SDL_memset(buf, 0, 65);
-    buf[1] = ID_SET_SETTINGS_VALUES;
-    if (enabled) {
-        ADD_SETTING(SETTING_GYRO_MODE, 0x18 /* SETTING_GYRO_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO */);
-    } else {
-        ADD_SETTING(SETTING_GYRO_MODE, 0x00 /* SETTING_GYRO_MODE_OFF */);
-    }
-    buf[2] = (unsigned char)(nSettings * 3);
-    if (SetFeatureReport(device->dev, buf, 3 + nSettings * 3) < 0) {
-        return SDL_SetError("Couldn't write feature report");
-    }
-
-    ctx->report_sensors = enabled;
-#endif
+    // On steam deck, sensors are enabled by default. Nothing to do here.
     return 0;
 }
 
 static void HIDAPI_DriverSteamDeck_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    // nothing to do here, kernel automatically switches back to lizard mode
+    // Lizard mode id automatically re-enabled by watchdog. Nothing to do here.
 }
 
 static void HIDAPI_DriverSteamDeck_FreeDevice(SDL_HIDAPI_Device *device)
