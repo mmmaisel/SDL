@@ -242,9 +242,9 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK,
                                   (pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_SELECT) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START,
-                                  (pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_MODE) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE,
                                   (pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_START) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE,
+                                  (pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_MODE) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1,
                                   (pInReport->payload.deckState.ulButtonsH & STEAMDECK_HBUTTON_BASE) ? SDL_PRESSED : SDL_RELEASED);
 
