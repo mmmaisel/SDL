@@ -291,7 +291,7 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
 
     values[0] = (pInReport->payload.deckState.sGyroX / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
     values[1] = (pInReport->payload.deckState.sGyroZ / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
-    values[2] = (pInReport->payload.deckState.sGyroY / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
+    values[2] = (-pInReport->payload.deckState.sGyroY / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
     SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, ctx->sensor_timestamp_us, values, 3);
 
     values[0] = (pInReport->payload.deckState.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
