@@ -414,7 +414,6 @@ static void HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed) SDL_NO_THREAD_SAFETY_ANALYSIS /* We unlock the joystick lock to be able to open the HID device on Android */
 {
     *removed = SDL_FALSE;
-    SDL_Log("HIDAPI_SetupDeviceDriver(%d, %d)\n", device->vendor_id, device->product_id);
 
     if (device->driver) {
         SDL_bool enabled;
@@ -513,7 +512,6 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
         }
 
         device->driver = HIDAPI_GetDeviceDriver(device);
-        SDL_Log("HIDAPI_SetupDeviceDriver(): found driver %p\n", device->driver);
 
         /* Initialize the device, which may cause a connected event */
         if (device->driver && !device->driver->InitDevice(device)) {
@@ -1152,9 +1150,7 @@ check_removed:
 
 static SDL_bool HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Device *device)
 {
-    SDL_Log("HIDAPI_IsEquivalentToDevice(%d, %d, x) %d %d\n", vendor_id, product_id, device->vendor_id, device->product_id);
     if (vendor_id == device->vendor_id && product_id == device->product_id) {
-        SDL_Log("HIDAPI_IsEquivalentToDevice() early return true\n");
         return SDL_TRUE;
     }
 
@@ -1226,7 +1222,6 @@ SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 vers
 
     /* Make sure we're initialized, as this could be called from other drivers during startup */
     if (HIDAPI_JoystickInit() < 0) {
-        SDL_Log("HIDAPI_IsDevicePresent() init abort\n");
         return SDL_FALSE;
     }
 
@@ -1237,7 +1232,6 @@ SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 vers
        responsive enough to catch those.
      */
     supported = HIDAPI_IsDeviceSupported(vendor_id, product_id, version, name);
-    SDL_Log("HIDAPI_IsDeviceSupported() returned %d\n", supported);
 #if defined(SDL_JOYSTICK_HIDAPI_XBOX360) || defined(SDL_JOYSTICK_HIDAPI_XBOXONE)
     if (!supported &&
         (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX"))) {
