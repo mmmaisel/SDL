@@ -22,8 +22,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
+#include "SDL_events.h"
 #include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
@@ -50,184 +50,116 @@ typedef struct
 } SDL_DriverSteamDeck_Context;
 
 #if 0
-static void steam_do_deck_input_event(struct steam_device *steam,
-        struct input_dev *input, u8 *data)
-{
-    u8 b8, b9, b10, b11, b13, b14;
-    bool lpad_touched, rpad_touched;
-
-    b8 = data[8];
-    b9 = data[9];
-    b10 = data[10];
-    b11 = data[11];
-    b13 = data[13];
-    b14 = data[14];
-
-    lpad_touched = b10 & BIT(3);
-    rpad_touched = b10 & BIT(4);
-
-    if (lpad_touched) {
-        input_report_abs(input, ABS_HAT0X, steam_le16(data + 16));
-        input_report_abs(input, ABS_HAT0Y, steam_le16(data + 18));
-    } else {
-        input_report_abs(input, ABS_HAT0X, 0);
-        input_report_abs(input, ABS_HAT0Y, 0);
-    }
-
-    if (rpad_touched) {
-        input_report_abs(input, ABS_HAT1X, steam_le16(data + 20));
-        input_report_abs(input, ABS_HAT1Y, steam_le16(data + 22));
-    } else {
-        input_report_abs(input, ABS_HAT1X, 0);
-        input_report_abs(input, ABS_HAT1Y, 0);
-    }
-
-    input_report_abs(input, ABS_X, steam_le16(data + 48));
-    input_report_abs(input, ABS_Y, -steam_le16(data + 50));
-    input_report_abs(input, ABS_RX, steam_le16(data + 52));
-    input_report_abs(input, ABS_RY, -steam_le16(data + 54));
-
-    input_report_abs(input, ABS_HAT2Y, steam_le16(data + 44));
-    input_report_abs(input, ABS_HAT2X, steam_le16(data + 46));
-
-    input_event(input, EV_KEY, BTN_TR2, !!(b8 & BIT(0)));
-    input_event(input, EV_KEY, BTN_TL2, !!(b8 & BIT(1)));
-    input_event(input, EV_KEY, BTN_TR, !!(b8 & BIT(2)));
-    input_event(input, EV_KEY, BTN_TL, !!(b8 & BIT(3)));
-    input_event(input, EV_KEY, BTN_Y, !!(b8 & BIT(4)));
-    input_event(input, EV_KEY, BTN_B, !!(b8 & BIT(5)));
-    input_event(input, EV_KEY, BTN_X, !!(b8 & BIT(6)));
-    input_event(input, EV_KEY, BTN_A, !!(b8 & BIT(7)));
-    input_event(input, EV_KEY, BTN_SELECT, !!(b9 & BIT(4)));
-    input_event(input, EV_KEY, BTN_MODE, !!(b9 & BIT(5)));
-    input_event(input, EV_KEY, BTN_START, !!(b9 & BIT(6)));
-    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY3, !!(b9 & BIT(7)));
-    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY4, !!(b10 & BIT(0)));
-    input_event(input, EV_KEY, BTN_THUMBL, !!(b10 & BIT(6)));
-    input_event(input, EV_KEY, BTN_THUMBR, !!(b11 & BIT(2)));
-    input_event(input, EV_KEY, BTN_DPAD_UP, !!(b9 & BIT(0)));
-    input_event(input, EV_KEY, BTN_DPAD_RIGHT, !!(b9 & BIT(1)));
-    input_event(input, EV_KEY, BTN_DPAD_LEFT, !!(b9 & BIT(2)));
-    input_event(input, EV_KEY, BTN_DPAD_DOWN, !!(b9 & BIT(3)));
-    input_event(input, EV_KEY, BTN_THUMB, !!(b10 & BIT(1)));
-    input_event(input, EV_KEY, BTN_THUMB2, !!(b10 & BIT(2)));
-    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY1, !!(b13 & BIT(1)));
-    input_event(input, EV_KEY, BTN_TRIGGER_HAPPY2, !!(b13 & BIT(2)));
-    input_event(input, EV_KEY, BTN_BASE, !!(b14 & BIT(2)));
-
-    input_sync(input);
-}
-
 |01000940 fd9a0000 00000000 00000000| ...@............ 00000000
 |00000000 00000000 c1005903 7e400000| ..........Y.~@.. 00000010
 |0100ffff c8aeeafc 8efd289d 00000000| ..........(..... 00000020
 |31042f08 f7053807 00000000 00000000| 1./...8......... 00000030
                                                        00000040
-
 #endif
 
-#define STEAMDECK_BUTTON_RT2 (1 << 0)
-#define STEAMDECK_BUTTON_LT2 (1 << 1)
-#define STEAMDECK_BUTTON_RT (1 << 2)
-#define STEAMDECK_BUTTON_LT (1 << 3)
-#define STEAMDECK_BUTTON_Y (1 << 4)
-#define STEAMDECK_BUTTON_B (1 << 5)
-#define STEAMDECK_BUTTON_X (1 << 6)
-#define STEAMDECK_BUTTON_A (1 << 7)
-#define STEAMDECK_BUTTON_DPAD_UP (1 << 8)
+#define STEAMDECK_BUTTON_RT2        (1 << 0)
+#define STEAMDECK_BUTTON_LT2        (1 << 1)
+#define STEAMDECK_BUTTON_RT         (1 << 2)
+#define STEAMDECK_BUTTON_LT         (1 << 3)
+#define STEAMDECK_BUTTON_Y          (1 << 4)
+#define STEAMDECK_BUTTON_B          (1 << 5)
+#define STEAMDECK_BUTTON_X          (1 << 6)
+#define STEAMDECK_BUTTON_A          (1 << 7)
+#define STEAMDECK_BUTTON_DPAD_UP    (1 << 8)
 #define STEAMDECK_BUTTON_DPAD_RIGHT (1 << 9)
-#define STEAMDECK_BUTTON_DPAD_LEFT (1 << 10)
-#define STEAMDECK_BUTTON_DPAD_DOWN (1 << 11)
-#define STEAMDECK_BUTTON_SELECT (1 << 12)
-#define STEAMDECK_BUTTON_MODE (1 << 13)
-#define STEAMDECK_BUTTON_START (1 << 14)
-#define STEAMDECK_BUTTON_PADDLE3 (1 << 15)
-#define STEAMDECK_BUTTON_PADDLE4 (1 << 16)
-#define STEAMDECK_BUTTON_PADL (1 << 17)
-#define STEAMDECK_BUTTON_PADR (1 << 18)
-#define STEAMDECK_BUTTON_STICKL (1 << 22)
-#define STEAMDECK_BUTTON_STICKR (1 << 26)
-#define STEAMDECK_BUTTON_PADDLE1 0x20000000000
-#define STEAMDECK_BUTTON_PADDLE2 0x50000000000
-#define STEAMDECK_BUTTON_BASE 0x4000000000000
+#define STEAMDECK_BUTTON_DPAD_LEFT  (1 << 10)
+#define STEAMDECK_BUTTON_DPAD_DOWN  (1 << 11)
+#define STEAMDECK_BUTTON_SELECT     (1 << 12)
+#define STEAMDECK_BUTTON_MODE       (1 << 13)
+#define STEAMDECK_BUTTON_START      (1 << 14)
+#define STEAMDECK_BUTTON_PADDLE3    (1 << 15)
+#define STEAMDECK_BUTTON_PADDLE4    (1 << 16)
+#define STEAMDECK_BUTTON_PADL       (1 << 17)
+#define STEAMDECK_BUTTON_PADR       (1 << 18)
+#define STEAMDECK_BUTTON_STICKL     (1 << 22)
+#define STEAMDECK_BUTTON_STICKR     (1 << 26)
+#define STEAMDECK_BUTTON_PADDLE1    0x20000000000
+#define STEAMDECK_BUTTON_PADDLE2    0x50000000000
+#define STEAMDECK_BUTTON_BASE       0x4000000000000
 
 // TODO: dont copy from kernel
-#define STEAM_CMD_CLEAR_MAPPINGS	0x81
-#define STEAM_CMD_WRITE_REGISTER	0x87
-#define STEAM_REG_LPAD_MODE		0x07
-#define STEAM_REG_RPAD_MODE		0x08
-#define STEAM_REG_RPAD_MARGIN		0x18
-#define STEAM_REG_LPAD_CLICK_PRESSURE	0x34
-#define STEAM_REG_RPAD_CLICK_PRESSURE	0x35
+#define STEAM_CMD_CLEAR_MAPPINGS      0x81
+#define STEAM_CMD_WRITE_REGISTER      0x87
+#define STEAM_REG_LPAD_MODE           0x07
+#define STEAM_REG_RPAD_MODE           0x08
+#define STEAM_REG_RPAD_MARGIN         0x18
+#define STEAM_REG_LPAD_CLICK_PRESSURE 0x34
+#define STEAM_REG_RPAD_CLICK_PRESSURE 0x35
 
-static SDL_bool DisableDeckLizardMode(SDL_hid_device* dev)
+static SDL_bool DisableDeckLizardMode(SDL_hid_device *dev)
 {
     // TODO: use existing FeatureReportHeader and extend it
     int rc;
-    Uint8 buffer[64];
+    // XXX: deck ctrl packets must always be 64 bytes + 1 (reportnum)
+    Uint8 buffer[65] = { 0 };
 
     buffer[0] = 0;
     buffer[1] = STEAM_CMD_CLEAR_MAPPINGS;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, 2);
-    if (rc != 2)
+    rc = SDL_hid_send_feature_report(dev, buffer, 65);
+    if (rc != 65)
         return SDL_FALSE;
 
+    buffer[0] = 0;
     buffer[1] = STEAM_CMD_WRITE_REGISTER;
-    buffer[2] = 15; // 5 regs, 3 byte each
-    buffer[3] = STEAM_REG_RPAD_MARGIN; /* disable margin */
+    buffer[2] = 15;                    // 5 regs, 3 byte each
+    buffer[3] = STEAM_REG_RPAD_MARGIN; // disable margin
     buffer[4] = 0;
     buffer[5] = 0;
-    buffer[6] = STEAM_REG_LPAD_MODE; /* disable mouse */
+    buffer[6] = STEAM_REG_LPAD_MODE; // disable mouse
     buffer[7] = 7;
     buffer[8] = 0;
-    buffer[9] = STEAM_REG_RPAD_MODE; /* disable mouse */
+    buffer[9] = STEAM_REG_RPAD_MODE; // disable mouse
     buffer[10] = 7;
     buffer[11] = 0;
-    buffer[12] = STEAM_REG_LPAD_CLICK_PRESSURE; /* disable clicky pad */
+    buffer[12] = STEAM_REG_LPAD_CLICK_PRESSURE; // disable clicky pad
     buffer[13] = 0xFF;
     buffer[14] = 0xFF;
-    buffer[15] = STEAM_REG_RPAD_CLICK_PRESSURE; /* disable clicky pad */
+    buffer[15] = STEAM_REG_RPAD_CLICK_PRESSURE; // disable clicky pad
     buffer[16] = 0xFF;
     buffer[17] = 0xFF;
 
-    // XXX: this does not work
-/*    rc = SDL_hid_send_feature_report(dev, buffer, 18);
-    if (rc != 18)
+    rc = SDL_hid_send_feature_report(dev, buffer, 65);
+    if (rc != 65)
         return SDL_FALSE;
 
-    SDL_hid_get_feature_report(dev, buffer, 18);*/
+    SDL_hid_get_feature_report(dev, buffer, 65);
 
-    //SDL_Log("Lizard mode disabled\n");
+    SDL_Log("Lizard mode disabled\n");
     return SDL_TRUE;
 }
 
-static SDL_bool FeedDeckLizardWatchdog(SDL_hid_device* dev)
+static SDL_bool FeedDeckLizardWatchdog(SDL_hid_device *dev)
 {
     int rc;
-    Uint8 buffer[64];
+    Uint8 buffer[65];
 
     buffer[0] = 0;
     buffer[1] = STEAM_CMD_CLEAR_MAPPINGS;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, 2);
-    if (rc != 2)
+    rc = SDL_hid_send_feature_report(dev, buffer, 65);
+    if (rc != 65)
         return SDL_FALSE;
 
+    buffer[0] = 0;
     buffer[1] = STEAM_CMD_WRITE_REGISTER;
-    buffer[2] = 3; // 1 regs, 3 byte each
+    buffer[2] = 3;                   // 1 regs, 3 byte each
     buffer[3] = STEAM_REG_RPAD_MODE; /* disable mouse */
     buffer[4] = 7;
     buffer[5] = 0;
 
-    // XXX: this does not work
-    /*rc = SDL_hid_send_feature_report(dev, buffer, 6);
-    if (rc != 6)
+    rc = SDL_hid_send_feature_report(dev, buffer, 65);
+    if (rc != 65)
         return SDL_FALSE;
 
-    SDL_hid_get_feature_report(dev, buffer, 6);*/
+    SDL_hid_get_feature_report(dev, buffer, 65);
 
-    //SDL_Log("Watchdog fed\n");
+    SDL_Log("Watchdog fed\n");
     return SDL_TRUE;
 }
 
@@ -324,14 +256,13 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (ctx->watchdog_counter++ > 200) {
         ctx->watchdog_counter = 0;
-        //if (!FeedDeckLizardWatchdog(device->dev))
-        if (!DisableDeckLizardMode(device->dev))
+        if (!FeedDeckLizardWatchdog(device->dev))
             return SDL_FALSE;
     }
 
     SDL_memset(data, 0, sizeof(data));
     r = SDL_hid_read(device->dev, data, sizeof(data));
-    //SDL_Log("SteamDeck_UpdateDevice() SDL_hid_read returned %d\n", r);
+    // SDL_Log("SteamDeck_UpdateDevice() SDL_hid_read returned %d\n", r);
     if (r == 0) {
         return SDL_FALSE;
     } else if (r <= 0) {
@@ -341,80 +272,78 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     // TODO: parse and validate packet
-    if (!(r == 64 && pInReport->header.unReportVersion == k_ValveInReportMsgVersion
-            && pInReport->header.ucType == ID_CONTROLLER_DECK_STATE
-            && pInReport->header.ucLength == 64)) {
+    if (!(r == 64 && pInReport->header.unReportVersion == k_ValveInReportMsgVersion && pInReport->header.ucType == ID_CONTROLLER_DECK_STATE && pInReport->header.ucLength == 64)) {
         SDL_Log("SteamDeck_UpdateDevice() received invalid packet: v: %d, t: %d, l: %d\n",
                 pInReport->header.unReportVersion, pInReport->header.ucType, pInReport->header.ucLength);
         return SDL_FALSE;
     }
 
-    //Uint64 timestamp = SDL_GetTicksNS();
-    // TODO: paddles and BASE button do not work
-    // TODO: send disable lizard mode packet every 200 ms
+    // Uint64 timestamp = SDL_GetTicksNS();
+    //  TODO: paddles and BASE button do not work
+    //  TODO: send disable lizard mode packet every 200 ms
 
     if (pInReport->payload.deckState.ulButtons != ctx->last_button_state) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_A) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_A) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_B) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_B) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_X) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_X) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_Y) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_Y) ? SDL_PRESSED : SDL_RELEASED);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_LT) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_LT) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_RT) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_RT) ? SDL_PRESSED : SDL_RELEASED);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_SELECT) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_SELECT) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_MODE) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_MODE) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_START) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_START) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_BASE) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_BASE) ? SDL_PRESSED : SDL_RELEASED);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_STICKL) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_STICKL) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_STICKR) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_STICKR) ? SDL_PRESSED : SDL_RELEASED);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE1,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE1) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE1) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE2,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE2) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE2) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE3,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE3) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE3) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE4,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE4) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_PADDLE4) ? SDL_PRESSED : SDL_RELEASED);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_UP) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_UP) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_DOWN) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_DOWN) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_LEFT) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_LEFT) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-            (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_RIGHT) ? SDL_PRESSED : SDL_RELEASED);
+                                  (pInReport->payload.deckState.ulButtons & STEAMDECK_BUTTON_DPAD_RIGHT) ? SDL_PRESSED : SDL_RELEASED);
         ctx->last_button_state = pInReport->payload.deckState.ulButtons;
     }
 
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,
-        (int)pInReport->payload.deckState.sLeftTrigger * 2 - 32768);
+                            (int)pInReport->payload.deckState.sLeftTrigger * 2 - 32768);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT,
-        (int)pInReport->payload.deckState.sRightTrigger * 2 - 32768);
+                            (int)pInReport->payload.deckState.sRightTrigger * 2 - 32768);
 
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX,
-        pInReport->payload.deckState.sLeftStickX);
+                            pInReport->payload.deckState.sLeftStickX);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY,
-        -pInReport->payload.deckState.sLeftStickY);
+                            -pInReport->payload.deckState.sLeftStickY);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX,
-        pInReport->payload.deckState.sRightStickX);
+                            pInReport->payload.deckState.sRightStickX);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY,
-        -pInReport->payload.deckState.sRightStickY);
+                            -pInReport->payload.deckState.sRightStickY);
 
     ctx->sensor_timestamp_us += ctx->update_rate_in_us;
 
@@ -435,8 +364,8 @@ static SDL_bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, S
 {
     float update_rate_in_hz = 1000.0f;
     SDL_Log("HIDAPI Steam Deck open joystick called\n");
-    //SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
-    // Should be always 1kHz according to USB descriptor
+    // SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
+    //  Should be always 1kHz according to USB descriptor
 
     SDL_AssertJoysticksLocked();
 
