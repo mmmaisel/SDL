@@ -52,73 +52,65 @@ typedef struct
 
 static SDL_bool DisableDeckLizardMode(SDL_hid_device *dev)
 {
-    // TODO: use existing FeatureReportHeader and extend it
     int rc;
-    // XXX: deck ctrl packets must always be 64 bytes + 1 (reportnum)
-    Uint8 buffer[65] = { 0 };
+    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    FeatureReportMsg *msg = (FeatureReportMsg*)(buffer + 1);
 
-    buffer[0] = 0;
-    buffer[1] = ID_CLEAR_DIGITAL_MAPPINGS;
+    msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, 65);
-    if (rc != 65)
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
         return SDL_FALSE;
 
-    buffer[0] = 0;
-    buffer[1] = ID_SET_SETTINGS_VALUES;
-    buffer[2] = 15;                    // 5 regs, 3 byte each
-    buffer[3] = SETTING_DECK_RPAD_MARGIN; // disable margin
-    buffer[4] = 0;
-    buffer[5] = 0;
-    buffer[6] = SETTING_DECK_LPAD_MODE; // disable mouse
-    buffer[7] = 7;
-    buffer[8] = 0;
-    buffer[9] = SETTING_DECK_RPAD_MODE; // disable mouse
-    buffer[10] = 7;
-    buffer[11] = 0;
-    buffer[12] = SETTING_DECK_LPAD_CLICK_PRESSURE; // disable clicky pad
-    buffer[13] = 0xFF;
-    buffer[14] = 0xFF;
-    buffer[15] = SETTING_DECK_RPAD_CLICK_PRESSURE; // disable clicky pad
-    buffer[16] = 0xFF;
-    buffer[17] = 0xFF;
+    msg->header.type = ID_SET_SETTINGS_VALUES;
+    msg->header.length = 5 * sizeof(WriteDeckRegister);
+    msg->payload.wrDeckRegister.reg[0].addr = SETTING_DECK_RPAD_MARGIN; // disable margin
+    msg->payload.wrDeckRegister.reg[0].val = 0;
+    msg->payload.wrDeckRegister.reg[1].addr = SETTING_DECK_LPAD_MODE; // disable mouse
+    msg->payload.wrDeckRegister.reg[1].val = 7;
+    msg->payload.wrDeckRegister.reg[2].addr = SETTING_DECK_RPAD_MODE; // disable mouse
+    msg->payload.wrDeckRegister.reg[2].val = 7;
+    msg->payload.wrDeckRegister.reg[3].addr = SETTING_DECK_LPAD_CLICK_PRESSURE; // disable clicky pad
+    msg->payload.wrDeckRegister.reg[3].val = 0xFFFF;
+    msg->payload.wrDeckRegister.reg[4].addr = SETTING_DECK_RPAD_CLICK_PRESSURE; // disable clicky pad
+    msg->payload.wrDeckRegister.reg[4].val = 0xFFFF;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, 65);
-    if (rc != 65)
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
         return SDL_FALSE;
 
-    SDL_hid_get_feature_report(dev, buffer, 65);
+    // There may be a lingering report read back after changing settings.
+    // Discard it.
+    SDL_hid_get_feature_report(dev, buffer, sizeof(buffer));
 
-    SDL_Log("Lizard mode disabled\n");
     return SDL_TRUE;
 }
 
 static SDL_bool FeedDeckLizardWatchdog(SDL_hid_device *dev)
 {
     int rc;
-    Uint8 buffer[65];
+    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    FeatureReportMsg *msg = (FeatureReportMsg*)(buffer + 1);
 
-    buffer[0] = 0;
-    buffer[1] = ID_CLEAR_DIGITAL_MAPPINGS;
+    msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, 65);
-    if (rc != 65)
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
         return SDL_FALSE;
 
-    buffer[0] = 0;
-    buffer[1] = ID_SET_SETTINGS_VALUES;
-    buffer[2] = 3;                   // 1 regs, 3 byte each
-    buffer[3] = SETTING_DECK_RPAD_MODE; /* disable mouse */
-    buffer[4] = 7;
-    buffer[5] = 0;
+    msg->header.type = ID_SET_SETTINGS_VALUES;
+    msg->header.length = 1 * sizeof(WriteDeckRegister);
+    msg->payload.wrDeckRegister.reg[0].addr = SETTING_DECK_RPAD_MODE; // disable mouse
+    msg->payload.wrDeckRegister.reg[0].val = 7;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, 65);
-    if (rc != 65)
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
         return SDL_FALSE;
 
-    SDL_hid_get_feature_report(dev, buffer, 65);
+    // There may be a lingering report read back after changing settings.
+    // Discard it.
+    SDL_hid_get_feature_report(dev, buffer, sizeof(buffer));
 
-    SDL_Log("Watchdog fed\n");
     return SDL_TRUE;
 }
 
